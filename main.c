@@ -15,23 +15,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-// #include <gtk/gtk.h>
-
-
-// static void log(const char * s) {
-//   static long long startTime = 0;
-
-//   struct timeval currentTimeval;
-//   gettimeofday(&currentTimeval, NULL);
-//   long long currentTime = currentTimeval.tv_sec * 1000 + currentTimeval.tv_usec / 1000;
-//   if (startTime) {
-//     printf("%lldms\n", currentTime - startTime);
-//   }
-//   printf("%s  ", s);
-//   fflush(stdout);
-//   startTime = currentTime;
-// }
-
 
 struct Screenshot {
   char * data;
@@ -99,47 +82,24 @@ static SSL * sslConnect(SSL_CTX * sslContext, const char * hostName, uint16_t po
 
 
 int main(int argc, char *argv[]) {
-  // gtk_init(&argc, &argv);
-
-  // GtkWidget * window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  // gtk_window_set_title(GTK_WINDOW(window), "Window");
-  // GtkWidget * label = gtk_label_new("ddsg");
-  // gtk_container_add(GTK_CONTAINER(window), label);
-  // g_signal_connect(window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
-  // gtk_widget_show(window);
-  // gtk_widget_show(label);
-
-
-
-
   SSL_load_error_strings();
   SSL_library_init();
   SSL_CTX * sslContext = SSL_CTX_new(SSLv23_client_method());
   if (sslContext == NULL) { ERR_print_errors_fp(stderr); return 1; }
 
-
   static char fileName[128] = {0};
   time_t t = time(NULL);
   strftime(fileName, sizeof(fileName), "Screenshots/Screenshot-alkedr_%Y.%m.%d_%H.%M.%S.png", localtime(&t));
 
-  // printf("Uploading screenshot %s\n", fileName);
-
-
-
-  // log("Connecting");
   SSL * handle = sslConnect(sslContext, "webdav.yandex.com", 443);
   if (handle == NULL) { return 1; }
 
-
-  // log("Taking screenshot");
   void * scr = malloc(1024*1024);
   int screenshotSize;
   takeScreenshot(scr, &screenshotSize);
 
-
   static char request[1024*1024];
 
-  // log("Sending request to create empty file");
   SSL_write(handle, request, sprintf(request,
     "PUT /%s HTTP/1.1\r\n"
     "Host: webdav.yandex.ru\r\n"
@@ -154,7 +114,6 @@ int main(int argc, char *argv[]) {
     fileName
   ));
 
-  // log("Sending request to publish file");
   SSL_write(handle, request, sprintf(request,
     "PROPPATCH /%s HTTP/1.1\r\n"
     "Host: webdav.yandex.ru\r\n"
@@ -166,7 +125,6 @@ int main(int argc, char *argv[]) {
     fileName
   ));
 
-  // log("Sending request to replace empty file with real one");
   SSL_write(handle, request, sprintf(request,
     "PUT /%s HTTP/1.1\r\n"
     "Host: webdav.yandex.ru\r\n"
@@ -181,10 +139,6 @@ int main(int argc, char *argv[]) {
   ));
   SSL_write(handle, scr, screenshotSize);
 
-
-  // writePutFileRequest(handle, fileName, scr, screenshotSize);
-
-  // log("Searching for a link");
   static char response[10240];
 
   SSL_read(handle, response, sizeof(response));
@@ -192,31 +146,18 @@ int main(int argc, char *argv[]) {
   SSL_read(handle, response, sizeof(response));
   memset(response, 0, sizeof(response));
   SSL_read(handle, response, sizeof(response));
-  // printf("\n\n%s", response);
 
   const char * linkBegin = strstr(response, "https://yadi.sk/");
   char * linkEnd = strstr(response, "</public_url>");
   *linkEnd = 0;
   printf("%s", linkBegin);
   fflush(stdin);
-  // GtkClipboard * clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-  // gtk_clipboard_set_text(clipboard, strdup(linkBegin), strlen(linkBegin));
-  // gtk_clipboard_store(clipboard);
-  // clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-  // gtk_clipboard_set_text(clipboard, strdup(linkBegin), strlen(linkBegin));
-  // gtk_clipboard_store(clipboard);
 
-  // log("Waiting for requests to complete");
   SSL_read(handle, response, sizeof(response));
   SSL_read(handle, response, sizeof(response));
 
   SSL_shutdown(handle);
   close(SSL_get_fd(handle));
 
-  // log("Done\n");
-
-  // sleep(100);
-
-  // gtk_maset clipboard text cin();
   return 0;
 }

@@ -1,7 +1,7 @@
 SHELL := bash
 
-tiny-yandex-disk-uploader: main.cpp Makefile
-	clang++ -std=c++11 -fPIE -O0 -ggdb3 -Weverything -Wno-c++98-compat $(shell pkg-config --cflags --libs Qt5Gui Qt5Widgets Qt5Network | sed 's/-I\//-isystem\ \//g') $< -o $@
+tiny-yandex-disk-uploader: main.c Makefile
+	clang -std=c11 -O0 -ggdb3 -Weverything -Wno-c++98-compat -lssl -lcrypto -lcairo -lX11 $< -o $@
 
 #upx --best --ultra-brute --lzma -qqq $@
 

@@ -15,15 +15,6 @@ static QString sendRequest(QByteArray request) {
 		response += socket.readAll().data();
 	}
 	return response;
-
-
-	// QSslSocket socket;
-	// socket.connectToHostEncrypted("webdav.yandex.com", 443);
-	// socket.write(
-	// 	);
-	// socket.flush();
-	// while (socket.waitForReadyRead())
-	// 	qDebug() << socket.readAll().data();
 }
 
 
@@ -57,7 +48,6 @@ int main(int argc, char** argv) {
 		)
 	);
 	qDebug() << putResponse;
-
 }
 
 
@@ -119,7 +109,11 @@ static QNetworkRequest publishRequest(QString fileName) {
 
 template<class Callback> void retrieveUploadUrl(QNetworkAccessManager * qnam, QString fileName, Callback callback) {
 	QNetworkReply * pathResponse = qnam->get(pathRequest(fileName));
+<<<<<<< HEAD
 	QObject::connect(pathResponse, &QNetworkReply::finished,
+=======
+	QObject::connect(pathResponse, &QNetworkReply::finished,
+>>>>>>> 3fe7f7cf0c7f879271d92a715886c6a012327382
 		[&]() {
 			auto json = QJsonDocument::fromJson(pathResponse->readAll()).object();
 			// std::cout << json.toJson() << std::endl;
@@ -144,7 +138,11 @@ template<class Callback> void publish(QNetworkAccessManager * qnam, QString file
 	auto buffer = new QBuffer(body);
 	buffer->open(QIODevice::ReadOnly);
 	QNetworkReply * publishResponse = qnam->sendCustomRequest(publishRequest(fileName), "PROPPATCH", buffer);
+<<<<<<< HEAD
 	QObject::connect(publishResponse, &QNetworkReply::finished,
+=======
+	QObject::connect(publishResponse, &QNetworkReply::finished,
+>>>>>>> 3fe7f7cf0c7f879271d92a715886c6a012327382
 		[&]() {
 			std::cout << "Файл расшарен" << std::endl;
 			std::cout << QString(publishResponse->readAll()).toStdString() << std::endl;
@@ -167,7 +165,11 @@ template<class Callback> void publish(QNetworkAccessManager * qnam, QString file
 
 // static void retrieveUploadUrl(QString name, QByteArray contents) {
 // 	QNetworkReply * pathResponse = qnam.get(pathRequest("123.png"));
+<<<<<<< HEAD
 // 	QObject::connect(pathResponse, &QNetworkReply::finished,
+=======
+// 	QObject::connect(pathResponse, &QNetworkReply::finished,
+>>>>>>> 3fe7f7cf0c7f879271d92a715886c6a012327382
 // 		[&]() {
 // 			auto json = QJsonDocument::fromJson(pathResponse->readAll()).object();
 // 			std::cout << json.toJson() << std::endl;
@@ -223,7 +225,11 @@ QNetworkAccessManager qnam;
 					req.setRawHeader("Content-Length", QByteArray(QString::number(body->size()).toStdString().c_str()));
 
 					QNetworkReply * publishResponse = qnam.sendCustomRequest(
+<<<<<<< HEAD
 						req,
+=======
+						req,
+>>>>>>> 3fe7f7cf0c7f879271d92a715886c6a012327382
 						"PROPPATCH /123.png HTTP/1.1",
 						buffer
 					);

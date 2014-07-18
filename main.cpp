@@ -1,8 +1,127 @@
 #include <QtGui>
 #include <QtWidgets>
 #include <QtNetwork>
-#include <iostream>
 
+
+int main(int argc, char ** argv) {
+	QTime timer;
+	timer.start();
+
+	QApplication app(argc, argv);
+	QApplication::setFont(QFont("Arial", 20));
+
+	QLabel label;
+	auto log = [&label, &timer](QString s) {
+		qDebug() << timer.elapsed() << "  " << s;
+		label.setText(s);
+	};
+
+	static const char * PUT_REQUEST_BEFORE_FILENAME = "PUT /";
+	static const char * PUT_REQUEST_AFTER_FILENAME = 
+		" HTTP/1.1\r\n"
+		"Host: webdav.yandex.ru\r\n"
+		"Accept: */*\r\n"
+		"Authorization: OAuth 45e24fd66c884bafaae7cc4e2e462789\r\n"
+		"Expect: 100-continue\r\n"
+		"Content-Type: image/png\r\n"
+		"Content-Length:       \r\n"
+		"\r\n";
+
+// PUT /2.png HTTP/1.1
+// Host: webdav.yandex.ru
+// Accept: */*
+// Authorization: OAuth 45e24fd66c884bafaae7cc4e2e462789
+// Expect: 100-continue
+// Content-Type: application/binary
+// Content-Length: 10313402
+
+
+	auto contentLengthOffset = 171 + qstrlen("2.png");
+
+	log("Формируем запрос");
+	QByteArray request;
+	QBuffer buffer(&request);
+	buffer.open(QIODevice::WriteOnly);
+	buffer.write(PUT_REQUEST_BEFORE_FILENAME);
+	buffer.write("2.png");
+	buffer.write(PUT_REQUEST_AFTER_FILENAME);
+	auto beforeScreenshotSize = buffer.size();
+	QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->winId()).save(&buffer, "PNG");
+	buffer.seek(contentLengthOffset);
+	buffer.write(QString::number(buffer.size() - beforeScreenshotSize).toStdString().data());
+
+	qDebug() << QString(request);
+
+	log("Соединяемся");
+	QSslSocket socket;
+	socket.connectToHostEncrypted("webdav.yandex.com", 443);
+
+	log("Отправляем запрос");
+	socket.write(request);
+	// socket.flush();
+
+	label.setText("Получаем ответ");
+	QString response;
+	while (socket.waitForReadyRead()) {
+		// std::cout << "read" << std::endl;
+		response += socket.readAll().data();
+		// if (matches) {
+		// 	QApplication::clipboard()->setText(url);
+		// 	sleep(1000);
+		// 	label.setText("URL скопирован в буфер обмена");
+		// }
+	}
+
+	qDebug() << response;
+
+
+/*
+
+	qDebug() << strlen();
+
+	QByteArray request = 
+		"PUT /a/otpusk.avi HTTP/1.1\r\n"
+		"Host: webdav.yandex.ru\r\n"
+		"Accept: **\r\n"
+		"Authorization: OAuth 0c4181a7c2cf4521964a72ff57a34a07\r\n"
+		"Expect: 100-continue\r\n"
+		"Content-Type: image/png\r\n"
+		"Content-Length:          \r\n"
+		"\r\n";
+
+	qDebug() << request.size();
+
+	QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->winId()).save(&buffer, "PNG");
+
+	const auto contentLength = QString::number(request.size() - 196);
+	for (size_t i = 0; i < contentLength.size(); i++) {
+		request[183 + i] = (char)contentLength[i].unicode();
+	}
+
+	buffer.write("publish request");
+
+	socket.write(request.data(), request.size());
+	socket.flush();
+
+	label.setText("Получаем ответ");
+
+	QString response;
+	while (socket.waitForReadyRead()) {
+		std::cout << "read" << std::endl;
+		response += socket.readAll().data();
+		if (matches) {
+			QApplication::clipboard()->setText(url);
+			sleep(1000);
+			label.setText("URL скопирован в буфер обмена");
+		}
+	}*/
+	return 0;
+}
+
+
+
+
+/*
 
 static QString sendRequest(QByteArray request) {
 	QSslSocket socket;
@@ -23,7 +142,7 @@ int main(int argc, char** argv) {
 
 	auto s = "PUT /otpusk.avi HTTP/1.1\n\r"
 "Host: webdav.yandex.ru\n\r"
-"Accept: */*\n\r"
+"Accept: **\n\r"
 "Authorization: OAuth 45e24fd66c884bafaae7cc4e2e462789\n\r"
 // "Authorization: Basic YWxleGFuZGVyLmtlZHJpazpZS2Vkcmlvbg==\n\r"
 "Etag: 1bc29b36f623ba82aaf6724fd3b16718\n\r"
@@ -37,7 +156,7 @@ int main(int argc, char** argv) {
 auto s2 = 
 "PROPFIND / HTTP/1.1"
 "Host: webdav.yandex.ru"
-"Accept: */*"
+"Accept: **"
 "Depth: 1"
 "Authorization: OAuth 45e24fd66c884bafaae7cc4e2e462789";
 
@@ -49,7 +168,7 @@ auto s2 =
     while (socket.waitForReadyRead())
         qDebug() << socket.readAll().data();
 }
-
+*/
 
 
 
